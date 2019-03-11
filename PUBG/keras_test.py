@@ -1,17 +1,17 @@
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import tensorflow as tf
-import keras
+# import keras
 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPool2D
-from keras.layers.normalization import BatchNormalization
-from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPool2D
+# from tensorflow.keras.layers.normalization import BatchNormalization
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
 from sklearn.model_selection import train_test_split
 
 import matplotlib.pyplot as plt
-from keras.callbacks import TensorBoard
+from tensorflow.keras.callbacks import TensorBoard
 from sklearn.model_selection import train_test_split
 
 
@@ -54,7 +54,8 @@ def reduce_mem_usage(df):
 
     return df
 
-train = reduce_mem_usage(pd.read_csv("./dataSet/smallSet.csv"))
+train = reduce_mem_usage(pd.read_csv("./dataSet/train_V2.csv"))
+# train = reduce_mem_usage(pd.read_csv("./dataSet/train_V2.csv"))
 # test_orj  = reduce_mem_usage(pd.read_csv("./dataSet/test_V2.csv"))
 
 # train.head(5000).to_csv("./dataSet/smallSet.csv")
@@ -68,11 +69,11 @@ import time
 
 # Select optimizer
 lr = 1e-4
-sgd = keras.optimizers.SGD(lr=lr, momentum=0.9)
-rms_prop = keras.optimizers.RMSprop(lr=lr)
-adam = keras.optimizers.adam(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08) 
-adamax = keras.optimizers.Adamax(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0)
-adadelta = keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.0)
+# sgd = tf.keras.optimizers.SGD(lr=lr, momentum=0.9)
+# rms_prop = tf.keras.optimizers.RMSprop(lr=lr)
+adam = tf.train.AdamOptimizer(learning_rate=lr, beta1=0.9, beta2=0.999, epsilon=1e-08) 
+# adamax = tf.keras.optimizers.Adamax(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0)
+# adadelta = tf.keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.0)
 
 def build_callback_fn():
     learning_rate_reduction = ReduceLROnPlateau(
@@ -107,17 +108,17 @@ def model(data, batch_size, epochs):
     X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size = 0.1, random_state=2)
 
     print('\033[31;1m' + str(build_callback_fn()) + '\033[0m')
+    print(X_train.shape, Y_train.shape)
     # Sequential model
     model = Sequential()
-    model.add(Dense(1024, activation='relu', input_shape=X_train.shape))
+    model.add(Dense(1024, activation='relu', input_dim=X_train.shape[1]))
     model.add(Dropout(0.2))
     model.add(Dense(1024, activation='relu'))
     model.add(Dropout(0.2))
-    model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
 
     # Load model
-    model.compile(optimizer=adam, loss='mse', metrics=['mae', 'accuracy'])
+    model.compile(optimizer="adam", loss='mse', metrics=['mae', 'accuracy'])
 
     # Fit model
     history = model.fit(
@@ -166,4 +167,4 @@ simple_data = pd.DataFrame({
     'winPlacePerc': train.winPlacePerc,
 })
 
-model(simple_data, 5, 10)
+model(simple_data, 5, 5)
