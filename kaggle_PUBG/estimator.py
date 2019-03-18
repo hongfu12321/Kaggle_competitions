@@ -102,7 +102,6 @@ def make_input_fn(X, y, n_epochs=None, shuffle=True):
         return dataset
     return input_fn
 
-<<<<<<< HEAD
 def my_input_fn(features, targets, batch_size=1, shuffle=True, num_epochs=None):
         # Convert pandas data into a dict of np arrays.
         features = {key:np.array(value) for key,value in dict(features).items()}
@@ -116,8 +115,6 @@ def my_input_fn(features, targets, batch_size=1, shuffle=True, num_epochs=None):
         features, labels = ds.make_one_shot_iterator().get_next()
         return features, labels
 
-=======
->>>>>>> bf12c28f2b458174618a6f8d4d5fbde0c6224eb8
 train_data = DataSet("./dataSet/train_V2.csv")
 train_data.df.head()
 print('Finish load train dataset')
