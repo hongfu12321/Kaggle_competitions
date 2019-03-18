@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from time import time
 import os
 import keras
-from keras import Sequential
+from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
 from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
 from tqdm import tqdm
@@ -18,8 +18,8 @@ warnings.filterwarnings('ignore')
 from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
 
-train_path = '../input/train_V2.csv'
-test_path = '../input/test_V2.csv'
+train_path = './dataSet/train_V2.csv'
+test_path = './dataSet/test_V2.csv'
 
 from keras import backend as K
 K.tensorflow_backend._get_available_gpus()
@@ -210,3 +210,4 @@ submit = pd.read_csv(test_path)
 submit['winPlacePerc'] = prediction_series
 submit = submit[['Id', 'winPlacePerc']]
 submit.to_csv('sample_submission.csv', index=False)
+print(submit)
