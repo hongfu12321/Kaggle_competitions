@@ -16,7 +16,7 @@ print('Finish import!')
 class DataSet:
     def __init__(self, path, is_test=False):
         self.is_test = is_test
-        nrows = None if is_test else 200000
+        nrows = None if is_test else 1000
         self.df = self.reduce_mem_usage(pd.read_csv(path, nrows=nrows))
         self.df_id = self.df['Id']
         self.deal_feature()
@@ -97,52 +97,57 @@ def make_input_fn(X, y, n_epochs=None, shuffle=True):
         dataset = tf.data.Dataset.from_tensor_slices((dict(X), y))
         if shuffle:
             dataset = dataset.shuffle(NUM_EXAMPLES)
-        # For training, cycle thru dataset as many times as need (n_epochs=None).    
         dataset = dataset.repeat(n_epochs)
-        # In memory training doesn't use batching.
         dataset = dataset.batch(NUM_EXAMPLES)
         return dataset
     return input_fn
 
-def build_BoostedTreesRegressor(feature_columns, data_len, batch_size=128):
-    params = {
-        'n_trees': 50,
-        'max_depth': 3,
-        'n_batches_per_layer': 1,
-        'center_bias': True
-    }
-    return BoostedTreesRegressor(feature_columns, **params)
+def my_input_fn(features, targets, batch_size=1, shuffle=True, num_epochs=None):
+        # Convert pandas data into a dict of np arrays.
+        features = {key:np.array(value) for key,value in dict(features).items()}
+        # Construct a dataset, and configure batching/repeating.
+        ds = Dataset.from_tensor_slices((features,targets)) # warning: 2GB limit
+        ds = ds.batch(batch_size).repeat(num_epochs)
+        # Shuffle the data, if specified.
+        if shuffle:
+            ds = ds.shuffle(42)
+        # Return the next batch of data.
+        features, labels = ds.make_one_shot_iterator().get_next()
+        return features, labels
 
 train_data = DataSet("./dataSet/train_V2.csv")
 train_data.df.head()
 print('Finish load train dataset')
 
 feature_columns = create_feature_columns(train_data.columns)
-estimator = tf.estimator.LinearRegressor(feature_columns, model_dir='./tensorbord/linearRegressor')
+estimator = tf.estimator.DNNRegressor(
+    hidden_units=[1024, 128, 32],
+    feature_columns=feature_columns,
+    model_dir='./tensorbord/DNNRegressor'
+)
 
 NUM_EXAMPLES = len(train_data.y_train)
-train_input_fn = make_input_fn(train_data.x_train, train_data.y_train)
-eval_input_fn = make_input_fn(train_data.x_valid, train_data.y_valid, shuffle=False, n_epochs=1)
+train_input_fn = lambda: my_input_fn(train_data.x_train, train_data.y_train)
+eval_input_fn = lambda: my_input_fn(train_data.x_valid, train_data.y_valid, shuffle=False, num_epochs=1)
 
+print('Start training')
 for _ in range(10):
-    estimator.train(train_input_fn, max_steps=100)
-    result = est.evaluate(valid_input_fn)
+    estimator.train(train_input_fn, steps=100)
+    result = estimator.evaluate(eval_input_fn)
     print(result)
 
 print('Finish training')
 
-test = DataSet('../data/test.csv')
+test = DataSet('./dataSet/test_V2.csv', is_test=True)
 
 print('Finish load test dataset')
 
 labels = test.df_id
-# test_X = utils.scale_features(test[FEATURE_COLS], FEATURE_COLS, utils.tanh_scalar)
-# test_X = utils.reduce_mem(test_X)
 
 test_input_fn = lambda: Dataset.from_tensors(dict(test.df))
 
-test_dicts = list(estimator.experimental_predict_with_explanations(test_input_fn))
-
+print('Finish predict')
+test_dicts = list(estimator.predict(test_input_fn)
 print('Finish predict')
 
 placements = pd.Series([round(p['predictions'][0], 4) for p in test_dicts])

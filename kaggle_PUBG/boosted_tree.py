@@ -127,28 +127,28 @@ eval_input_fn = make_input_fn(train_data.x_valid, train_data.y_valid, shuffle=Fa
 
 for _ in range(10):
     estimator.train(train_input_fn, max_steps=100)
-    result = est.evaluate(valid_input_fn)
+    result = estimator.evaluate(eval_input_fn)
     print(result)
 
 print('Finish training')
 
-test = DataSet('../data/test.csv')
+# test = DataSet('../data/test.csv')
 
-print('Finish load test dataset')
+# print('Finish load test dataset')
 
-labels = test.df_id
-# test_X = utils.scale_features(test[FEATURE_COLS], FEATURE_COLS, utils.tanh_scalar)
-# test_X = utils.reduce_mem(test_X)
+# labels = test.df_id
+# # test_X = utils.scale_features(test[FEATURE_COLS], FEATURE_COLS, utils.tanh_scalar)
+# # test_X = utils.reduce_mem(test_X)
 
-test_input_fn = lambda: Dataset.from_tensors(dict(test.df))
+# test_input_fn = lambda: Dataset.from_tensors(dict(test.df))
 
-test_dicts = list(estimator.experimental_predict_with_explanations(test_input_fn))
+# test_dicts = list(estimator.experimental_predict_with_explanations(test_input_fn))
 
-print('Finish predict')
+# print('Finish predict')
 
-placements = pd.Series([round(p['predictions'][0], 4) for p in test_dicts])
+# placements = pd.Series([round(p['predictions'][0], 4) for p in test_dicts])
 
-submission = pd.DataFrame({'Id': labels.values, 'winPlacePerc': placements.values})
-submission.to_csv('submission.csv', index=False)
+# submission = pd.DataFrame({'Id': labels.values, 'winPlacePerc': placements.values})
+# submission.to_csv('submission.csv', index=False)
 
-print('Finish submission')
+# print('Finish submission')
