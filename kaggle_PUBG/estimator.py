@@ -104,15 +104,6 @@ def make_input_fn(X, y, n_epochs=None, shuffle=True):
         return dataset
     return input_fn
 
-def build_BoostedTreesRegressor(feature_columns, data_len, batch_size=128):
-    params = {
-        'n_trees': 50,
-        'max_depth': 3,
-        'n_batches_per_layer': 1,
-        'center_bias': True
-    }
-    return BoostedTreesRegressor(feature_columns, **params)
-
 train_data = DataSet("./dataSet/train_V2.csv")
 train_data.df.head()
 print('Finish load train dataset')
