@@ -117,7 +117,8 @@ estimator = BoostedTreesRegressor(
     n_trees=50,
     max_depth=3,
     n_batches_per_layer=1,
-    center_bias=True
+    center_bias=True,
+    model_dir='./tensorbord/boosted_tree'
 )
 
 NUM_EXAMPLES = len(train_data.y_train)

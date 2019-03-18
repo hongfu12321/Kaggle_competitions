@@ -118,7 +118,7 @@ train_data.df.head()
 print('Finish load train dataset')
 
 feature_columns = create_feature_columns(train_data.columns)
-estimator = tf.estimator.LinearClassifier(feature_columns)
+estimator = tf.estimator.LinearRegressor(feature_columns, model_dir='./tensorbord/linearRegressor')
 
 NUM_EXAMPLES = len(train_data.y_train)
 train_input_fn = make_input_fn(train_data.x_train, train_data.y_train)
