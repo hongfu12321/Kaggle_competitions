@@ -5,7 +5,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 
 from tensorflow.data import Dataset
-from tensorflow.estimator import BoostedTreesRegressor
 from tensorflow.feature_column import numeric_column
 
 from sklearn.model_selection import train_test_split
