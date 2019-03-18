@@ -12,8 +12,6 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
 from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
-from tqdm import tqdm
-warnings.filterwarnings('ignore')
 
 from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
@@ -191,16 +189,20 @@ class create_model:
         self.model.save_weights(self.save_model_HDF5_path)
         print("Saving the model...")
 
+print('Start getting train data')
 train_data = DataSet(train_path)
-print('Finish get data')
+print('Finish getting train data')
 
 # Train the model
-model = create_model(shape=train_data.x_train.shape[1], epochs=1)
+model = create_model(shape=train_data.x_train.shape[1], epochs=60)
 model.train(train_data.x_train, train_data.y_train)
 
 # Predict the test dataset
+print('Start getting test data')
 test_data = DataSet(test_path, is_test=True)
-predict = pg_model.model.predict(test_data.df)
+print('Finish getting test data')
+predict = model.predict(test_data.df)
+print('Finish prediction')
 
 prediction = predict.ravel()
 prediction_series = pd.Series(prediction, name='winPlacePerc')
