@@ -17,7 +17,7 @@ print('Finish import!')
 class DataSet:
     def __init__(self, path, is_test=False):
         self.is_test = is_test
-        nrows = None if is_test else 200000
+        nrows = None if is_test else 500000
         self.df = self.reduce_mem_usage(pd.read_csv(path, nrows=nrows))
         self.df_id = self.df['Id']
         self.deal_feature()
@@ -118,7 +118,7 @@ estimator = BoostedTreesRegressor(
     max_depth=3,
     n_batches_per_layer=1,
     center_bias=True,
-    model_dir='./tensorbord/boosted_tree'
+    model_dir='./tensorbord/boosted_tree1'
 )
 
 NUM_EXAMPLES = len(train_data.y_train)
@@ -126,7 +126,7 @@ train_input_fn = make_input_fn(train_data.x_train, train_data.y_train)
 eval_input_fn = make_input_fn(train_data.x_valid, train_data.y_valid, shuffle=False, n_epochs=1)
 
 for _ in range(10):
-    estimator.train(train_input_fn, max_steps=100)
+    estimator.train(train_input_fn, steps=1000)
     result = estimator.evaluate(eval_input_fn)
     print(result)
 
