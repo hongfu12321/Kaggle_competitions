@@ -16,7 +16,7 @@ print('Finish import!')
 class DataSet:
     def __init__(self, path, is_test=False):
         self.is_test = is_test
-        nrows = None if is_test else 1000
+        nrows = None if is_test else 500000
         self.df = self.reduce_mem_usage(pd.read_csv(path, nrows=nrows))
         self.df_id = self.df['Id']
         self.deal_feature()
@@ -132,27 +132,27 @@ eval_input_fn = lambda: my_input_fn(train_data.x_valid, train_data.y_valid, shuf
 
 print('Start training')
 for _ in range(10):
-    estimator.train(train_input_fn, steps=100)
+    estimator.train(train_input_fn, steps=1000)
     result = estimator.evaluate(eval_input_fn)
     print(result)
 
 print('Finish training')
 
-test = DataSet('./dataSet/test_V2.csv', is_test=True)
+# test = DataSet('./dataSet/test_V2.csv', is_test=True)
 
-print('Finish load test dataset')
+# print('Finish load test dataset')
 
-labels = test.df_id
+# labels = test.df_id
 
-test_input_fn = lambda: Dataset.from_tensors(dict(test.df))
+# test_input_fn = lambda: Dataset.from_tensors(dict(test.df))
 
-print('Finish predict')
-test_dicts = list(estimator.predict(test_input_fn)
-print('Finish predict')
+# print('Finish predict')
+# test_dicts = list(estimator.predict(test_input_fn))
+# print('Finish predict')
 
-placements = pd.Series([round(p['predictions'][0], 4) for p in test_dicts])
+# placements = pd.Series([round(p['predictions'][0], 4) for p in test_dicts])
 
-submission = pd.DataFrame({'Id': labels.values, 'winPlacePerc': placements.values})
-submission.to_csv('submission.csv', index=False)
+# submission = pd.DataFrame({'Id': labels.values, 'winPlacePerc': placements.values})
+# submission.to_csv('submission.csv', index=False)
 
-print('Finish submission')
+# print('Finish submission')
