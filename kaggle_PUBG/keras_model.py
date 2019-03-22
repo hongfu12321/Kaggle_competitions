@@ -8,25 +8,21 @@ from sklearn.preprocessing import StandardScaler
 
 from time import time
 import os
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Input
+# import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Input
 from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
-
-from tensorflow.python.client import device_lib
-print(device_lib.list_local_devices())
+print('Finish import')
 
 train_path = './dataSet/train_V2.csv'
 test_path = './dataSet/test_V2.csv'
-
-from keras import backend as K
-K.tensorflow_backend._get_available_gpus()
+print('Finish loading data')
 
 # Get data
 class DataSet:
     def __init__(self, path, is_test=False):
         self.is_test = is_test
-        self.df = self.reduce_mem_usage(pd.read_csv(path))
+        self.df = self.reduce_mem_usage(pd.read_csv(path, nrows=100000))
         self.df_id = self.df['Id']
         self.deal_feature()
         if is_test:
@@ -115,7 +111,6 @@ class create_model:
         self.load_model_json_path = './model/' + load_model_name + '.json'
         self.load_model_HDF5_path = './model/' + load_model_name + '.h5'
         self.has_tb = tensorboard
-        self.opt = keras.optimizers.adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
         self.model = Sequential()
         self.build_NN()
         self.compile_model()
@@ -139,7 +134,7 @@ class create_model:
         
     def compile_model(self):
         self.model.compile(
-            optimizer=self.opt,
+            optimizer='adam',
             loss='mse',
             metrics=['mae']
         )
@@ -168,7 +163,7 @@ class create_model:
             save_weights_only=True,
             verbose=1,
         )
-        self.callbacks_fn =  [learning_rate_reduction, tensorboard]
+        self.callbacks_fn =  [learning_rate_reduction]
 #         self.callbacks_fn = [tensorboard]
     
     def train(self, x_train, y_train):
@@ -194,14 +189,14 @@ train_data = DataSet(train_path)
 print('Finish getting train data')
 
 # Train the model
-model = create_model(shape=train_data.x_train.shape[1], epochs=60)
+model = create_model(shape=train_data.x_train.shape[1], epochs=1)
 model.train(train_data.x_train, train_data.y_train)
 
 # Predict the test dataset
 print('Start getting test data')
 test_data = DataSet(test_path, is_test=True)
 print('Finish getting test data')
-predict = model.predict(test_data.df)
+predict = model.model.predict(test_data.df)
 print('Finish prediction')
 
 prediction = predict.ravel()
@@ -213,3 +208,27 @@ submit['winPlacePerc'] = prediction_series
 submit = submit[['Id', 'winPlacePerc']]
 submit.to_csv('sample_submission.csv', index=False)
 print(submit)
+
+# Tensorboard validation and train graph
+import tensorflow as tf
+
+writer_1 = tf.summary.FileWriter("./tensorboard/keras/training")
+writer_2 = tf.summary.FileWriter("./tensorboard/keras/validation")
+
+log_var = tf.Variable(0.0)
+tf.summary.scalar("loss", log_var)
+write_loss = tf.summary.merge_all()
+
+session = tf.InteractiveSession()
+session.run(tf.global_variables_initializer())
+
+i = 0
+for train, validate in zip(history.history['loss'], history.history['val_loss']):
+    summary = session.run(write_loss, {log_var: train})
+    writer_1.add_summary(summary, i)
+    writer_1.flush()
+
+    summary = session.run(write_loss, {log_var: validate})
+    writer_2.add_summary(summary, i)
+    writer_2.flush()
+    i += 1
