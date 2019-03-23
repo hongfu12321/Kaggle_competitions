@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler
 
 from time import time
 import os
-# import keras
+from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Input
 # from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
@@ -23,7 +23,7 @@ print('Finish loading data')
 class DataSet:
     def __init__(self, path, is_test=False):
         self.is_test = is_test
-        self.df = self.reduce_mem_usage(pd.read_csv(path, nrows=100000))
+        self.df = self.reduce_mem_usage(pd.read_csv(path, nrows=2500000))
         self.df_id = self.df['Id']
         self.deal_feature()
         if is_test:
@@ -85,8 +85,12 @@ class DataSet:
         self.df.replace([np.inf, -np.inf], 0)
         
     def split_data(self):
-        self.y_train = self.df[['winPlacePerc']]
-        self.x_train = self.df.drop(['winPlacePerc'], 1)
+        train_set = self.df.sample(frac=0.8, replace=False, random_state=100)
+        cv_set = self.df.loc[set(self.df.index) - set(train_set.index)]
+        self.y_train = train_set[['winPlacePerc']]
+        self.x_train = train_set.drop(['winPlacePerc'], 1)
+        self.y_valid = cv_set[['winPlacePerc']]
+        self.x_valid = cv_set.drop(['winPlacePerc'], 1)
 
 # Create model
 class create_model:
@@ -95,32 +99,15 @@ class create_model:
         shape,
         epochs=1,
         batch_size=100000,
-        save_model=False,
-        load_model=False,
-        save_model_name='test',
-        load_model_name='test',
-        tensorboard=False,
     ):
         self.shape=shape
         self.epochs=epochs
         self.batch_size=batch_size
         
-        self.save_model = save_model
-        self.load_model = load_model
-        self.save_model_json_path = './model/' + save_model_name + '.json'
-        self.save_model_HDF5_path = './model/' + save_model_name + '.h5'
-        self.load_model_json_path = './model/' + load_model_name + '.json'
-        self.load_model_HDF5_path = './model/' + load_model_name + '.h5'
-        self.has_tb = tensorboard
         self.model = Sequential()
         self.build_NN()
         self.compile_model()
-        
         self.create_callback_fn()
-        # tensorboard
-        if self.has_tb:
-            log_dir = './tensorboard/{}'.format(time())
-            self.tensorboard = TrainValTensorBoard(log_dir=log_dir, write_graph=False)
         
     def build_NN(self):
         self.model.add(Dense(80,input_dim=self.shape,activation='selu'))
@@ -152,9 +139,6 @@ class create_model:
         # Build tensorboard
         tensorboard = TensorBoard(
             log_dir='./Graph1',
-            histogram_freq=0,
-            write_graph=True,
-            write_images=True
         )
 
         # Saving model callback function
@@ -167,48 +151,41 @@ class create_model:
         self.callbacks_fn =  [tensorboard]
 #         self.callbacks_fn = [tensorboard]
     
-    def train(self, x_train, y_train):
+    def train(self, x_train, y_train, x_valid, y_valid):
+        path = './tensorboard/keras' + str(time())
         self.history = self.model.fit(
             x_train,
             y_train,
+            validation_data=(x_valid, y_valid),
             epochs=self.epochs,
             batch_size=self.batch_size,
-            callbacks=self.callbacks_fn
+            callbacks=[TensorBoard(log_dir=path)]
         )
-        if self.save_model:
-            self.save()
-    
-    def save(self):
-        model_json = self.model.to_json()
-        with open(self.save_model_json_path, 'w') as json_file:
-            json_file.write(model_json)
-        self.model.save_weights(self.save_model_HDF5_path)
-        print("Saving the model...")
 
 print('Start getting train data')
 train_data = DataSet(train_path)
 print('Finish getting train data')
 
 # Train the model
-model = create_model(shape=train_data.x_train.shape[1], epochs=1)
-model.train(train_data.x_train, train_data.y_train)
+model = create_model(shape=train_data.x_train.shape[1], epochs=15)
+model.train(train_data.x_train, train_data.y_train, train_data.x_valid, train_data.y_valid)
 
-# Predict the test dataset
-print('Start getting test data')
-test_data = DataSet(test_path, is_test=True)
-print('Finish getting test data')
-predict = model.model.predict(test_data.df)
-print('Finish prediction')
+# # Predict the test dataset
+# print('Start getting test data')
+# test_data = DataSet(test_path, is_test=True)
+# print('Finish getting test data')
+# predict = model.model.predict(test_data.df)
+# print('Finish prediction')
 
-prediction = predict.ravel()
-prediction_series = pd.Series(prediction, name='winPlacePerc')
+# prediction = predict.ravel()
+# prediction_series = pd.Series(prediction, name='winPlacePerc')
 
-# Submission
-submit = pd.read_csv(test_path)
-submit['winPlacePerc'] = prediction_series
-submit = submit[['Id', 'winPlacePerc']]
-submit.to_csv('sample_submission.csv', index=False)
-print(submit)
+# # Submission
+# submit = pd.read_csv(test_path)
+# submit['winPlacePerc'] = prediction_series
+# submit = submit[['Id', 'winPlacePerc']]
+# submit.to_csv('sample_submission.csv', index=False)
+# print(submit)
 
 # Tensorboard validation and train graph
 # import tensorflow as tf
