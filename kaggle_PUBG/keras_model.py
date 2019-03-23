@@ -11,7 +11,8 @@ import os
 # import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Input
-from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+# from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+from tensorflow.python.keras.callbacks import TensorBoard
 print('Finish import')
 
 train_path = './dataSet/train_V2.csv'
@@ -140,13 +141,13 @@ class create_model:
         )
         
     def create_callback_fn(self):
-        learning_rate_reduction = ReduceLROnPlateau(
-            monitor='val_acc',
-            patience=3,
-            verbose=1,
-            factor=0.5,
-            min_lr=0.0001
-        )
+        # learning_rate_reduction = ReduceLROnPlateau(
+        #     monitor='val_acc',
+        #     patience=3,
+        #     verbose=1,
+        #     factor=0.5,
+        #     min_lr=0.0001
+        # )
 
         # Build tensorboard
         tensorboard = TensorBoard(
@@ -157,13 +158,13 @@ class create_model:
         )
 
         # Saving model callback function
-        checkpoint_path = './keras_model/model_' + str(time()) + '.ckpt'
-        checkpoint = ModelCheckpoint(
-            checkpoint_path,
-            save_weights_only=True,
-            verbose=1,
-        )
-        self.callbacks_fn =  [learning_rate_reduction]
+        # checkpoint_path = './keras_model/model_' + str(time()) + '.ckpt'
+        # checkpoint = ModelCheckpoint(
+        #     checkpoint_path,
+        #     save_weights_only=True,
+        #     verbose=1,
+        # )
+        self.callbacks_fn =  [tensorboard]
 #         self.callbacks_fn = [tensorboard]
     
     def train(self, x_train, y_train):
@@ -172,7 +173,7 @@ class create_model:
             y_train,
             epochs=self.epochs,
             batch_size=self.batch_size,
-#             callbacks=self.callbacks_fn
+            callbacks=self.callbacks_fn
         )
         if self.save_model:
             self.save()
@@ -210,25 +211,25 @@ submit.to_csv('sample_submission.csv', index=False)
 print(submit)
 
 # Tensorboard validation and train graph
-import tensorflow as tf
+# import tensorflow as tf
 
-writer_1 = tf.summary.FileWriter("./tensorboard/keras/training")
-writer_2 = tf.summary.FileWriter("./tensorboard/keras/validation")
+# writer_1 = tf.summary.create_file_writer("./tensorboard/keras/training")
+# writer_2 = tf.summary.create_file_writer("./tensorboard/keras/validation")
 
-log_var = tf.Variable(0.0)
-tf.summary.scalar("loss", log_var)
-write_loss = tf.summary.merge_all()
+# log_var = tf.Variable(0.0)
+# tf.summary.scalar("loss", log_var)
+# write_loss = tf.summary.merge_all()
 
-session = tf.InteractiveSession()
-session.run(tf.global_variables_initializer())
+# session = tf.InteractiveSession()
+# session.run(tf.global_variables_initializer())
 
-i = 0
-for train, validate in zip(history.history['loss'], history.history['val_loss']):
-    summary = session.run(write_loss, {log_var: train})
-    writer_1.add_summary(summary, i)
-    writer_1.flush()
+# i = 0
+# for train, validate in zip(model.history['loss'], model.history['val_loss']):
+#     summary = session.run(write_loss, {log_var: train})
+#     writer_1.add_summary(summary, i)
+#     writer_1.flush()
 
-    summary = session.run(write_loss, {log_var: validate})
-    writer_2.add_summary(summary, i)
-    writer_2.flush()
-    i += 1
+#     summary = session.run(write_loss, {log_var: validate})
+#     writer_2.add_summary(summary, i)
+#     writer_2.flush()
+#     i += 1
