@@ -7,7 +7,7 @@ Three models built using the MNST dataset to predict digits using computer visio
 ![](img/estimator.png)
 
 ## The loss curve using Keras functional layer
-![](img/keras_functional.png)
+![](img/keras_functioal.png)
 
 ## The loss curve using Keras sequential layer
 ![](img/keras_sequential.png)
