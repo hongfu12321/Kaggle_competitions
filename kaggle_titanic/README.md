@@ -13,4 +13,4 @@
 ![](img/gender_class.png)
 
 ## The loss curve using gender as input data, separate to different class and bind it
-![](img/gender_class_age.png)
+![](img/gender_class_age_age.png)
