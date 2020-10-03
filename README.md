@@ -7,3 +7,5 @@ Solving different problems on Kaggle competitions by using Tensorflow 1.13, Tens
 - Digit recognizer - CNN classification
 - Speech recognition - CNN classification
 - 2018 CVPR, image segmantation - Mask RCNN implementation
+
+There is seperated README.md in each Kaggle Competitions projects.
