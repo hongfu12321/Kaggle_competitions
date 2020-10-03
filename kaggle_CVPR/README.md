@@ -5,8 +5,8 @@ Didn't retrain the model.
 
 Finish this project with enhsu
 
-![](imgs/Result_0.png)
+![](imgs/result_0.png)
 
-![](imgs/Result_1.png)
+![](imgs/result_1.png)
 
-![](imgs/Result_2.png)
+![](imgs/result_2.png)
