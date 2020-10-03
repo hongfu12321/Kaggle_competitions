@@ -6,3 +6,9 @@
 >Because data set is huge. Please go the the website and download it by yourself if you want~
 
 [PUBG Finish Placement Prediction (Kernels Only)](https://www.kaggle.com/c/pubg-finish-placement-prediction)
+
+## The loss curve using estimator - DNN-Regressor
+![](img/estimator_DNNRegressor.png)
+
+## The loss curve using Keras
+![](img/keras.png)
